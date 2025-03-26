@@ -19,6 +19,19 @@ DWORD WINAPI handle_client(LPVOID lpParam)
     char method[16], path[64];
 
     int recv_result = recv(client, recvbuffer, BUFF_LEN - 1, 0);
+
+    if (recv_result == SOCKET_ERROR) {
+        int error_code = WSAGetLastError();
+        if (error_code == WSAETIMEDOUT) {
+            log_error("Recv operation timed out.");
+        } else {
+            log_error("Recv Failed");
+        }
+        shutdown(client,SD_BOTH);
+        closesocket(client);
+        return 1;
+    }
+
     if (recv_result > 0)
     {
         recvbuffer[recv_result] = '\0'; // placing the terminating \0 manually after the buffer since it won't be present in the raw string.
@@ -72,7 +85,7 @@ DWORD WINAPI handle_client(LPVOID lpParam)
             }
             else
             {
-                send_http_response(client, 500, "text/plain", "Method not allowed", 14);
+                send_http_response(client, 500, "text/plain", "Method not allowed", strlen("Method not allowed"));
             }
         }
         else if (recv_result == 0)

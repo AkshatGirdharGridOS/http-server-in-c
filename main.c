@@ -52,6 +52,11 @@ int main()
         return 1;
     }
 
+    // set timeouts for the listener sockets (server side)
+    int timeout = RECV_TIMEOUT;
+    setsockopt(listener,SOL_SOCKET,SO_RCVTIMEO, (const char *)&timeout,sizeof(timeout));
+    setsockopt(listener,SOL_SOCKET,SO_SNDTIMEO,(const char *)&timeout,sizeof(timeout));
+
     // address configuration
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = inet_addr(ADDRESS); // we are converting the ADDRESS (localhost in this case)
@@ -93,6 +98,10 @@ int main()
             log_error("Client accept has failed!");
             continue;
         }
+
+        //setting timeouts for the client sockets as well
+        setsockopt(client,SOL_SOCKET,SO_RCVTIMEO,(const char *)&timeout,sizeof(timeout));
+        setsockopt(client,SOL_SOCKET,SO_SNDTIMEO,(const char *)&timeout,sizeof(timeout));
 
         // we have to get the client information
         printf("Client Connected at : %s:%d\n", inet_ntoa(clientAddr.sin_addr), clientAddr.sin_port);
